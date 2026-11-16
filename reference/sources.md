@@ -21,3 +21,4 @@
 | 15 | web.dev/articles/vitals | Core Web Vitals | — | LCP 2,5 с, INP 200 мс, CLS 0,1 | — |
 | 16 | 12 роликов из Instagram о сайтах с анимацией (разбор в соседнем репозитории: clip-maker-8000/reference/reel-references.md) | реклама генераторов и библиотек промтов | чужие видео, не храним | сайт-кино по кадрам, 3D-сцены, карты на 3D-тайлах | обещания «один промт = сайт» |
 | 17 | github.com/emilkowalski/skills (emil-design-eng, animate, choreograph, review-animations, break-ui) | навыки дизайн-инженера Эмиля Ковальского | MIT | решение «двигать ли», кривые, длительности, физика, хореография группы, формат «было, стало, почему» (`motion-ui.md`); худшие данные (`ui-hardening.md`) | навыки целиком, Swift, Expo, Sonner |
+| 18 | обзоры трендов 2026 (Digidop, DesignRush, Naturaily, StudioMeyer, Centric), прочитано 17.11.2026 | статьи | чтение, без кода | что сильное и что устарело в 2026, в `reference/trends.md` | списки без доказательств как правила |
