@@ -10,6 +10,12 @@
 | карта | MapLibre GL JS, PMTiles | flyTo, слои | много данных: deck.gl; фотореальный город: CesiumJS или 3d-tiles-renderer; глобус: globe.gl | док. |
 | игра | three.js или R3F, Rapier | свой цикл с фиксированным шагом физики | 2D: canvas или PixiJS | док. |
 
+## Стартовый выбор
+
+- Магазин или визитка без своего сервера, корзина в localStorage и заказ в мессенджер: Astro.
+- Нужен React для R3F, сложный интерфейс или свой сервер: Next.js.
+- Playwright для проверок ставить можно (официальный пакет).
+
 ## Официальные навыки, которые можно ставить
 
 - GSAP: `npx skills add https://github.com/greensock/gsap-skills` (MIT, от авторов GSAP). Ядро, таймлайн, ScrollTrigger, React, производительность.

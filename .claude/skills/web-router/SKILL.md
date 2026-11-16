@@ -43,6 +43,7 @@ description: Use FIRST for any request to build, redesign, animate or improve a 
 - `reference/scroll-sequence.md` видео и кадры по прокрутке.
 - `reference/three-world.md` 3D: мир, камера, материалы, проверки.
 - `reference/maps.md` карты, тайлы, условия.
+- `reference/deploy.md` выкладка, домен, ключи, кэш.
 - `reference/sources.md` откуда это всё и под какой лицензией.
 
 ## Что общее у всех типов
