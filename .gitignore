@@ -1,0 +1,12 @@
+# проекты и тяжёлое не храним в репозитории правил
+projects/
+node_modules/
+dist/
+.next/
+*.mp4
+*.mov
+*.webm
+*.glb
+*.ktx2
+__pycache__/
+.env*
