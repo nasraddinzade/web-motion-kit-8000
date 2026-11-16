@@ -5,7 +5,7 @@
 | # | Источник | Что это | Лицензия | Что взяли | Чего не брали |
 |---|---|---|---|---|---|
 | 1 | github.com/anthropics/skills, frontend-design | официальный навык дизайна интерфейса | Apache-2.0 | предмет решает первый экран, план из 4–6 цветов и ролей шрифта, список умолчаний сгенерированного дизайна, смелость в одном месте | — |
-| 2 | github.com/Leonxlnx/taste-skill | самый популярный сторонний навык вкуса сайтов | MIT | вид бизнеса решает эффекты, одна секция на экран, равные края, ховеры, эффекты только для техники, фото для мест | свой проверяющий скрипт и хук остановки без согласия |
+| 2 | github.com/Leonxlnx/taste-skill | самый популярный сторонний навык вкуса сайтов | MIT | чеклист готовности 2.5 (`ui-hardening.md`, раздел 7); вид бизнеса решает эффекты, одна секция на экран, равные края, ховеры, эффекты только для техники, фото для мест | свой проверяющий скрипт и хук остановки без согласия |
 | 3 | github.com/MengTo/Skills (no-ai-design-slop, audit-ai-design-slop, build-awwwards-quality-sites, cinematic-scroll-storytelling, scroll-world-storytelling, scroll-scrubbed-visual-sequence, scroll-scrubbed-word-reveal, build-threejs-scroll-worlds, 3d-virtual-tour, optimize-web-animations, iterate-until-verified, globe-gl, игровые навыки) | большой набор навыков веба и 3D | MIT | почти всё про прокрутку, мир по прокрутке, тур, остановку вне экрана, шаблонность, проверку на ширинах | привязку к их браузеру и сервисам картинок |
 | 4 | github.com/greensock/gsap-skills | официальные навыки GSAP | MIT | ставить в проект; transform и opacity, батчинг, stagger | — |
 | 5 | github.com/cloudai-x/threejs-skills | three.js r186, R3F 9.8, drei 10.7, gltf-transform 4.5 | MIT | замер через renderer.info, вызовы отрисовки, инстансы, LOD, сжатие моделей | — |
