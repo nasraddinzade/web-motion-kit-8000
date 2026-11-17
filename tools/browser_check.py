@@ -9,6 +9,7 @@
 
 Пример: python tools/browser_check.py http://localhost:3000 --out qa/run1
         python tools/browser_check.py http://localhost:3000/catalog --widths 390,1440 --video
+        python tools/browser_check.py http://localhost:3000 --sweep   # ещё ширины 320–1440 шагом 10
         python tools/browser_check.py --selftest
 
 По умолчанию браузер без окна: он рисует программно (SwiftShader), без видеокарты. Размытие
@@ -122,15 +123,43 @@ def check(url, out, widths, lcp_max, cls_max, video, headed=False):
     return report
 
 
+def sweep(url, start=320, stop=1440, step=10, headed=False):
+    """Ширины между проверочными: горизонтальная прокрутка на каждой ширине с шагом step.
+    Ломается часто не на 390 или 768, а между ними (сайт SOS: ряд значков перенёсся на 410)."""
+    bad = []
+    with sync_playwright() as p:
+        browser = launch(p, headed)
+        ctx = browser.new_context(viewport={"width": start, "height": 844})
+        page = ctx.new_page()
+        page.goto(url, wait_until="load")
+        page.wait_for_timeout(800)
+        for w in range(start, stop + 1, step):
+            page.set_viewport_size({"width": w, "height": 844 if w < 600 else 900})
+            page.wait_for_timeout(120)
+            sw = page.evaluate("Math.max(document.documentElement.scrollWidth, document.body ? document.body.scrollWidth : 0)")
+            cw = page.evaluate("document.documentElement.clientWidth")
+            if sw > cw + 1:
+                bad.append(w)
+        ctx.close()
+        browser.close()
+    return bad
+
+
 GOOD = "<!doctype html><meta name=viewport content='width=device-width'><h1>Хорошо</h1><p>Текст.</p>"
 BAD = ("<!doctype html><meta name=viewport content='width=device-width'><h1>Плохо</h1>"
        "<div style='width:2000px;height:20px;background:red'></div><script>console.error('сломано')</script>")
+
+
+MIDDLE = ("<!doctype html><meta name=viewport content='width=device-width'><style>"
+          "@media (min-width:400px) and (max-width:420px){.x{width:600px}}</style>"
+          "<p>Тест.</p><div class=x style='height:20px;background:red'></div>")
 
 
 def selftest():
     d = pathlib.Path(tempfile.mkdtemp())
     (d / "good.html").write_text(GOOD, encoding="utf-8")
     (d / "bad.html").write_text(BAD, encoding="utf-8")
+    (d / "middle.html").write_text(MIDDLE, encoding="utf-8")
     handler = lambda *a, **k: http.server.SimpleHTTPRequestHandler(*a, directory=str(d), **k)
     httpd = socketserver.TCPServer(("127.0.0.1", 0), handler)
     port = httpd.server_address[1]
@@ -138,14 +167,19 @@ def selftest():
     try:
         g = check(f"http://127.0.0.1:{port}/good.html", d / "g", [390, 1440], 2500, 0.1, False)
         b = check(f"http://127.0.0.1:{port}/bad.html", d / "b", [390, 1440], 2500, 0.1, False)
+        m_fixed = check(f"http://127.0.0.1:{port}/middle.html", d / "m", [390, 768], 2500, 0.1, False)
+        m_sweep = sweep(f"http://127.0.0.1:{port}/middle.html", 320, 800, 10)
+        g_sweep = sweep(f"http://127.0.0.1:{port}/good.html", 320, 800, 10)
     finally:
         httpd.shutdown()
     ok_good = g["ok"]
     ok_bad = (not b["ok"]) and any("горизонтальная" in x for x in b["problems"]) and any("консоли" in x for x in b["problems"])
     print(f"хорошая страница без проблем -> {'ок' if ok_good else 'ОШИБКА ' + str(g['problems'])}")
     print(f"плохая страница поймана (прокрутка и консоль) -> {'ок' if ok_bad else 'ОШИБКА ' + str(b['problems'])}")
+    ok_mid = m_fixed["ok"] and m_sweep and all(400 <= x <= 420 for x in m_sweep) and not g_sweep
+    print(f"ширины 390 и 768 пропускают поломку около 410, прогон с шагом её ловит {m_sweep} -> {'ок' if ok_mid else 'ОШИБКА'}")
     shutil.rmtree(d, ignore_errors=True)
-    sys.exit(0 if ok_good and ok_bad else 1)
+    sys.exit(0 if ok_good and ok_bad and ok_mid else 1)
 
 
 def main():
@@ -156,6 +190,7 @@ def main():
     ap.add_argument("--lcp", type=int, default=2500, help="предел LCP, мс")
     ap.add_argument("--cls", type=float, default=0.1, help="предел CLS")
     ap.add_argument("--video", action="store_true", help="записать видео экрана на каждой ширине")
+    ap.add_argument("--sweep", action="store_true", help="ещё прогон ширин 320–1440 с шагом 10: горизонтальная прокрутка между проверочными ширинами")
     ap.add_argument("--headed", action="store_true", help="окно браузера с видеокартой: для движения, скруглений, размытия и WebGL")
     ap.add_argument("--selftest", action="store_true")
     a = ap.parse_args()
@@ -164,6 +199,12 @@ def main():
     if not a.url:
         ap.error("укажи адрес или --selftest")
     r = check(a.url, a.out, [int(x) for x in a.widths.split(",")], a.lcp, a.cls, a.video, a.headed)
+    if a.sweep:
+        bad = sweep(a.url, headed=a.headed)
+        r["sweep_overflow_widths"] = bad
+        if bad:
+            r["problems"].append(f"горизонтальная прокрутка между проверочными ширинами: {bad}")
+            r["ok"] = False
     print(json.dumps(r, ensure_ascii=False, indent=2))
     sys.exit(0 if r["ok"] else 1)
 
