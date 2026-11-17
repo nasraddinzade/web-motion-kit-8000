@@ -8,7 +8,8 @@
   3. ссылки на файлы репозитория (в обратных кавычках и markdown), которых нет;
   4. маркеры слияния git;
   5. два раздела с одинаковым номером «# 03.» в одном файле;
-  6. строки, похожие на ключи и токены.
+  6. строки, похожие на ключи и токены;
+  7. урок в reference/lessons.md без метки «Тип: ... Проект: ... Применять: ...».
 Чего не ловит: противоречия по смыслу. Их ищи через grep по ключевым словам и числам правила
 (см. CONTRIBUTING.md, разделы 1 и 4).
 
@@ -121,10 +122,22 @@ for old, new in RENAMED.items():
     if (ROOT / ".claude" / "skills" / old).exists():
         err(ROOT / ".claude" / "skills" / old, 0, f"папка со старым именем навыка, перенеси в «{new}»")
 
+# 7. Метки уроков в reference/lessons.md: откуда урок и к каким типам он применяется.
+try:
+    sys.path.insert(0, str(ROOT / "tools"))
+    import lessons_for
+    _lp = ROOT / "reference" / "lessons.md"
+    if _lp.exists():
+        _units, _lerr = lessons_for.parse(_lp.read_text(encoding="utf-8"))
+        for _e in _lerr:
+            err(_lp, None, "урок: " + _e)
+except ImportError:
+    err(ROOT / "tools", None, "нет tools/lessons_for.py")
+
 if errors:
     print("ОШИБКИ репозитория:")
     for e in errors:
         print("  " + e)
     print(f"Итого {len(errors)}.")
     sys.exit(1)
-print("Репозиторий согласован: навыки, скрипты, ссылки, номера, маркеры слияния, ключи, старые имена.")
+print("Репозиторий согласован: навыки, скрипты, ссылки, номера, маркеры слияния, ключи, старые имена, метки уроков.")
