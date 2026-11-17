@@ -11,6 +11,11 @@
         python tools/browser_check.py http://localhost:3000/catalog --widths 390,1440 --video
         python tools/browser_check.py --selftest
 
+По умолчанию браузер без окна: он рисует программно (SwiftShader), без видеокарты. Размытие
+(backdrop-filter), WebGL, скругления движущихся слоёв и тени там выходят иначе, чем у посетителя.
+Для движения, скруглений и WebGL запускай с --headed (окно браузера, видеокарта компьютера) и
+смотри на настоящем телефоне. Скрипт пишет в report.json, каким рендером снимал.
+
 Не проверяет: путь посетителя (клики до результата пиши сценарием в проекте), вкус, звук.
 Нужен Playwright для Python (pip install playwright) и Chromium или Chrome
 (путь можно задать переменной CHROME).
@@ -44,27 +49,30 @@ try {
 """
 
 
-def launch(p):
+def launch(p, headed=False):
     exe = os.environ.get("CHROME")
     if not exe:
         for c in ("/usr/bin/google-chrome", "/usr/bin/chromium", "/usr/bin/chromium-browser"):
             if os.path.exists(c):
                 exe = c
                 break
+    kw = {"headless": not headed}
     try:
-        return p.chromium.launch()
+        return p.chromium.launch(**kw)
     except Exception:
         if not exe:
             raise
-        return p.chromium.launch(executable_path=exe)
+        return p.chromium.launch(executable_path=exe, **kw)
 
 
-def check(url, out, widths, lcp_max, cls_max, video):
+def check(url, out, widths, lcp_max, cls_max, video, headed=False):
     out = pathlib.Path(out)
     out.mkdir(parents=True, exist_ok=True)
-    report = {"url": url, "widths": {}, "problems": []}
+    report = {"url": url, "widths": {}, "problems": [],
+              "render": "окно браузера, видеокарта" if headed else
+              "без окна, программный рендер: движение, скругления, размытие и WebGL проверь ещё с --headed"}
     with sync_playwright() as p:
-        browser = launch(p)
+        browser = launch(p, headed)
         for w in widths:
             h = 844 if w < 600 else (1024 if w < 1100 else 900)
             opts = {"viewport": {"width": w, "height": h}}
@@ -146,13 +154,14 @@ def main():
     ap.add_argument("--lcp", type=int, default=2500, help="предел LCP, мс")
     ap.add_argument("--cls", type=float, default=0.1, help="предел CLS")
     ap.add_argument("--video", action="store_true", help="записать видео экрана на каждой ширине")
+    ap.add_argument("--headed", action="store_true", help="окно браузера с видеокартой: для движения, скруглений, размытия и WebGL")
     ap.add_argument("--selftest", action="store_true")
     a = ap.parse_args()
     if a.selftest:
         selftest()
     if not a.url:
         ap.error("укажи адрес или --selftest")
-    r = check(a.url, a.out, [int(x) for x in a.widths.split(",")], a.lcp, a.cls, a.video)
+    r = check(a.url, a.out, [int(x) for x in a.widths.split(",")], a.lcp, a.cls, a.video, a.headed)
     print(json.dumps(r, ensure_ascii=False, indent=2))
     sys.exit(0 if r["ok"] else 1)
 
