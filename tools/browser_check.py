@@ -102,6 +102,8 @@ def check(url, out, widths, lcp_max, cls_max, video, headed=False):
                 report["problems"].append(f"{w}: горизонтальная прокрутка {sw} > {cw}")
             if errors:
                 report["problems"].append(f"{w}: ошибки консоли {len(errors)}")
+            if not lcp:
+                report.setdefault("notes", []).append(f"{w}: LCP не измерен, бюджет загрузки не проверен")
             if lcp and lcp > lcp_max:
                 report["problems"].append(f"{w}: LCP {round(lcp)} мс > {lcp_max}")
             if cls > cls_max:
